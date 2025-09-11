@@ -1,1 +1,63 @@
-<!-- Redeploy Vercel -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Rádio - DJ Markim</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f2f2f2;
+        }
+        h1 {
+            color: #333;
+        }
+        #songName {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #0077cc;
+        }
+        audio {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Web Rádio - DJ Markim</h1>
+
+    <!-- Player do ZenoFM -->
+    <audio controls autoplay>
+        <source src="https://stream.zeno.fm/7heeu8w1pzzuv" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+
+    <!-- Nome da música -->
+    <div id="songName">Carregando música...</div>
+
+    <!-- Script para atualizar o nome da música a cada 5 segundos -->
+    <script>
+        function atualizarMusica() {
+            fetch('CurrentSong.txt')
+            .then(response => response.text())
+            .then(song => {
+                document.getElementById('songName').innerText = song;
+            })
+            .catch(error => {
+                console.error('Erro ao carregar a música:', error);
+                document.getElementById('songName').innerText = 'Não foi possível carregar a música';
+            });
+        }
+
+        // Atualiza a música imediatamente ao carregar
+        atualizarMusica();
+
+        // Atualiza a cada 5 segundos
+        setInterval(atualizarMusica, 5000);
+    </script>
+</body>
+</html>
