@@ -39,13 +39,15 @@
     <!-- Nome da música -->
     <div id="songName">Carregando música...</div>
 
-    <!-- Script para atualizar o nome da música a cada 5 segundos -->
+    <!-- Script para atualizar o nome da música diretamente do GitHub -->
     <script>
+        const songURL = 'https://raw.githubusercontent.com/marcostheangels/webradio/main/CurrentSong.txt';
+
         function atualizarMusica() {
-            fetch('CurrentSong.txt')
+            fetch(songURL)
             .then(response => response.text())
             .then(song => {
-                document.getElementById('songName').innerText = song;
+                document.getElementById('songName').innerText = song.trim();
             })
             .catch(error => {
                 console.error('Erro ao carregar a música:', error);
