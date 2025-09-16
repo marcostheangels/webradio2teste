@@ -65,25 +65,22 @@
     <script>
         function atualizarMusica() {
             const stationId = '7heeu8w1pzzuv';
-            // URL original da API da Zeno
             const originalApiUrl = `https://api.zeno.fm/mounts/metadata/subscribe/${stationId}`;
             
-            // URL do proxy que permite a conexão
-            const proxyUrl = `https://cors-anywhere.herokuapp.com/${originalApiUrl}`;
+            // --- MUDANÇA AQUI: USANDO O NOVO PROXY 'ALLORIGINS' ---
+            const encodedApiUrl = encodeURIComponent(originalApiUrl);
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodedApiUrl}`;
 
-            // Usaremos o método fetch, que é mais compatível com o proxy
             fetch(proxyUrl)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('A resposta da rede não foi OK');
                     }
-                    // A resposta da Zeno não é um JSON direto, precisamos pegar o texto
                     return response.text();
                 })
                 .then(text => {
-                    // O texto vem com "data: " no início, precisamos remover isso
                     const jsonText = text.replace('data: ', '').trim();
-                    if (jsonText) {
+                    if (jsonText && jsonText.startsWith('{')) { // Validação extra
                         const data = JSON.parse(jsonText);
                         
                         if (data && data.currentSong) {
@@ -93,6 +90,10 @@
                             document.getElementById('musica').textContent = 'Música ao vivo';
                             document.getElementById('artista').textContent = 'Web Rádio DJ Markim';
                         }
+                    } else {
+                        // Se a resposta estiver vazia ou não for um JSON, usa o texto padrão
+                        document.getElementById('musica').textContent = 'Música ao vivo';
+                        document.getElementById('artista').textContent = 'Web Rádio DJ Markim';
                     }
                 })
                 .catch(error => {
