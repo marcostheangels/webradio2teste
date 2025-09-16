@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Rádio DJ Markim</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .player-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .now-playing {
+            margin: 20px 0;
+        }
+        #musica {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1a1a1a;
+            min-height: 28px;
+        }
+        #artista {
+            font-size: 1.1em;
+            color: #555;
+            min-height: 20px;
+        }
+        audio {
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        <h1>Web Rádio DJ Markim</h1>
+
+        <div class="now-playing">
+            <div id="musica">Carregando música...</div>
+            <div id="artista"></div>
+        </div>
+
+        <audio controls autoplay src="https://stream-175.zeno.fm/7heeu8w1pzzuv">
+            Seu navegador não suporta o elemento de áudio.
+        </audio>
+    </div>
+
+    <script>
+        const stationId = '7heeu8w1pzzuv';
+        const apiUrl = `https://api.zeno.fm/mounts/metadata/subscribe/${stationId}`;
+
+        // Cria uma conexão contínua com o servidor usando EventSource
+        const eventSource = new EventSource(apiUrl);
+
+        // Esta função será chamada toda vez que o servidor enviar uma nova mensagem (um novo nome de música)
+        eventSource.onmessage = function(event) {
+            // Os dados vêm como texto, então precisamos convertê-los para um objeto
+            const data = JSON.parse(event.data);
+
+            // Verifica se o campo 'currentSong' não está vazio
+            if (data && data.currentSong) {
+                document.getElementById('musica').textContent = data.currentSong;
+                document.getElementById('artista').textContent = data.currentArtist || 'Artista desconhecido';
+                console.log("Música atualizada:", data.currentSong);
+            } else {
+                // Se estiver vazio, mostra a mensagem padrão
+                document.getElementById('musica').textContent = 'Música ao vivo';
+                document.getElementById('artista').textContent = 'Web Rádio DJ Markim';
+            }
+        };
+
+        // Função para lidar com erros de conexão
+        eventSource.onerror = function(err) {
+            console.error("Erro na conexão com EventSource, tentando reconectar...", err);
+            document.getElementById('musica').textContent = 'Reconectando...';
+            document.getElementById('artista').textContent = 'Aguarde';
+        };
+
+    </script>
+
+</body>
+</html>
