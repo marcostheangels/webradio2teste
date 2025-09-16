@@ -63,36 +63,49 @@
     </div>
 
     <script>
-        const stationId = '7heeu8w1pzzuv';
-        const apiUrl = `https://api.zeno.fm/mounts/metadata/subscribe/${stationId}`;
+        function atualizarMusica() {
+            const stationId = '7heeu8w1pzzuv';
+            // URL original da API da Zeno
+            const originalApiUrl = `https://api.zeno.fm/mounts/metadata/subscribe/${stationId}`;
+            
+            // URL do proxy que permite a conexão
+            const proxyUrl = `https://cors-anywhere.herokuapp.com/${originalApiUrl}`;
 
-        // Cria uma conexão contínua com o servidor usando EventSource
-        const eventSource = new EventSource(apiUrl);
+            // Usaremos o método fetch, que é mais compatível com o proxy
+            fetch(proxyUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('A resposta da rede não foi OK');
+                    }
+                    // A resposta da Zeno não é um JSON direto, precisamos pegar o texto
+                    return response.text();
+                })
+                .then(text => {
+                    // O texto vem com "data: " no início, precisamos remover isso
+                    const jsonText = text.replace('data: ', '').trim();
+                    if (jsonText) {
+                        const data = JSON.parse(jsonText);
+                        
+                        if (data && data.currentSong) {
+                            document.getElementById('musica').textContent = data.currentSong;
+                            document.getElementById('artista').textContent = data.currentArtist || 'Artista desconhecido';
+                        } else {
+                            document.getElementById('musica').textContent = 'Música ao vivo';
+                            document.getElementById('artista').textContent = 'Web Rádio DJ Markim';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar informações da música via proxy:', error);
+                    document.getElementById('musica').textContent = 'Erro de Conexão';
+                    document.getElementById('artista').textContent = 'Não foi possível carregar.';
+                });
+        }
 
-        // Esta função será chamada toda vez que o servidor enviar uma nova mensagem (um novo nome de música)
-        eventSource.onmessage = function(event) {
-            // Os dados vêm como texto, então precisamos convertê-los para um objeto
-            const data = JSON.parse(event.data);
-
-            // Verifica se o campo 'currentSong' não está vazio
-            if (data && data.currentSong) {
-                document.getElementById('musica').textContent = data.currentSong;
-                document.getElementById('artista').textContent = data.currentArtist || 'Artista desconhecido';
-                console.log("Música atualizada:", data.currentSong);
-            } else {
-                // Se estiver vazio, mostra a mensagem padrão
-                document.getElementById('musica').textContent = 'Música ao vivo';
-                document.getElementById('artista').textContent = 'Web Rádio DJ Markim';
-            }
-        };
-
-        // Função para lidar com erros de conexão
-        eventSource.onerror = function(err) {
-            console.error("Erro na conexão com EventSource, tentando reconectar...", err);
-            document.getElementById('musica').textContent = 'Reconectando...';
-            document.getElementById('artista').textContent = 'Aguarde';
-        };
-
+        // Chama a função pela primeira vez
+        atualizarMusica();
+        // Define um intervalo para atualizar as informações a cada 10 segundos
+        setInterval(atualizarMusica, 10000);
     </script>
 
 </body>
